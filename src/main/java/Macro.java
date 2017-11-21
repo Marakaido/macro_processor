@@ -1,14 +1,17 @@
 import java.util.Arrays;
 
 public class Macro {
-    public Macro(final String name, final String[] params, final String body) {
+    public Macro(final String name, final String body, final String ... params) {
         this.name = name;
         this.body = body;
         this.params = Arrays.copyOf(params, params.length);
     }
 
     public String apply(final String ... paramValues) {
-        String result = new String(body);
+        if(paramValues.length != params.length)
+            throw new IllegalArgumentException("Expected " + params.length + "arguments, "
+                    + paramValues.length + " given");
+        String result = body;
         for (int i = 0; i < paramValues.length; i++) {
             result = result.replaceAll("&"+params[i], paramValues[i]);
         }

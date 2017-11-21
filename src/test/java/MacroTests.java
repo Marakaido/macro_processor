@@ -9,14 +9,14 @@ public class MacroTests {
     }
 
     @Test public void applyOneParameterTest() {
-        String body = "there was a man who had a dog and &human was his name";
+        String body = "there was a man who had a dog and &human; was his name";
         String expected = "there was a man who had a dog and Bingo was his name";
         Macro macro = new Macro("name", body, "human");
         assertEquals(expected, macro.apply("Bingo"));
     }
 
     @Test public void applyMultipleParamsTest() {
-        String body = "there was a &sex who had a &animal and &human was his name";
+        String body = "there was a &sex; who had a &animal; and &human; was his name";
         String expected = "there was a man who had a dog and Bingo was his name";
         Macro macro = new Macro("name", body, "sex", "animal", "human");
         assertEquals(expected, macro.apply("man", "dog", "Bingo"));
@@ -30,7 +30,7 @@ public class MacroTests {
 
     @Test(expected = IllegalArgumentException.class)
     public void applyTooFewArgumentsTest() {
-        String body = "there was a &sex who had a &animal and &human was his name";
+        String body = "there was a &sex; who had a &animal; and &human; was his name";
         String expected = "there was a man who had a dog and Bingo was his name";
         Macro macro = new Macro("name", body, "sex", "animal", "human");
         macro.apply("man", "dog");
@@ -38,7 +38,7 @@ public class MacroTests {
 
     @Test(expected = IllegalArgumentException.class)
     public void applyTooManyArgumentsTest() {
-        String body = "there was a &sex who had a &animal and &human was his name";
+        String body = "there was a &sex; who had a &animal; and &human; was his name";
         String expected = "there was a man who had a dog and Bingo was his name";
         Macro macro = new Macro("name", body, "sex", "animal", "human");
         macro.apply("man", "dog", "Bingo", "Slavko");

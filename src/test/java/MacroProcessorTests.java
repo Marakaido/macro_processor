@@ -1,11 +1,20 @@
 import org.junit.Test;
+
+import java.util.Map;
+import static java.util.Map.*;
+
 import static org.junit.Assert.*;
 
 public class MacroProcessorTests {
-    private String macroEnd = "## ENDM\n";
+    private String macroEnd = "## ENDM";
+    private Map<String, Macro> macros = Map.ofEntries(
+            entry("name", new Macro("name", "data")),
+            entry("name1", new Macro("name1", "data &param1; data", "param1")),
+            entry("name2", new Macro("name2", "&param1; &param2;", "param1", "param2"))
+    );
 
     @Test public void applyWithEmptyBodyTest() {
-        String text = "## name MACRO\n" + macroEnd + "text ##name()text";
+        String text = "## name MACRO\n " + macroEnd + "text ##name()text";
         String expected = "text text";
         assertEquals(expected, MacroProcessor.apply(text));
     }
@@ -25,16 +34,16 @@ public class MacroProcessorTests {
 
     @Test public void applyOneParameterTest() {
         String macroDefinitionOneParameter = "## name param1 MACRO\n" +
-                "macro data macro data\n&param1;macro data &param1;\n" +
+                "macro data &param1; data &param1;\n" +
                 macroEnd;
         String text = macroDefinitionOneParameter + "text text##name(value)text text";
-        String expected = "text textmacro data macro data\nvaluemacro data value\ntext text";
+        String expected = "text textmacro data value data valuetext text";
         assertEquals(expected, MacroProcessor.apply(text));
     }
 
     @Test public void applyMultipleParamsTest() {
         String macroDefinitionMultipleParams = "## name param1 param2 param3 MACRO\n" +
-                "macro data &param2; &param1; &param3; macro data" +
+                "macro data &param2; &param1; &param3; macro data " +
                 macroEnd;
         String text = macroDefinitionMultipleParams + "text text##name(value1, value2, value3)text text";
         String expected = "text textmacro data value2 value1 value3 macro datatext text";
@@ -49,14 +58,14 @@ public class MacroProcessorTests {
     }
 
     @Test public void applyDefinitionInTheEndTest() {
-        String text = "text ##name() text\n## name MACRO\ndata\n" + macroEnd;
+        String text = "text ##name() text## name MACRO\ndata\n" + macroEnd;
         String expected = "text data text";
         assertEquals(expected, MacroProcessor.apply(text));
     }
 
     @Test(expected = IllegalStateException.class)
     public void applyMacroWrongNameCall() {
-        String text = "## name MACRO\ndata\n" + macroEnd + "##wrongName\n";
+        String text = "## name MACRO\ndata\n" + macroEnd + "##wrongName()\n";
         MacroProcessor.apply(text);
     }
 
@@ -71,5 +80,44 @@ public class MacroProcessorTests {
         String text = "## MACRO macroLibrary.txt\ntext ##name() text";
         String expected = "text data text";
         assertEquals(expected, MacroProcessor.apply(text));
+    }
+
+    @Test public void macroParse() {
+        String text = "##name   MACRO data data " + macroEnd;
+        Macro macro = MacroProcessor.getMacros(text).get("name");
+        Macro expected = new Macro("name", "data data");
+        assertEquals(expected, macro);
+    }
+
+    @Test public void getMacrosSingleParameterParse() {
+        String text = "## name param1 MACRO data data " + macroEnd;
+        Macro macro = MacroProcessor.getMacros(text).get("name");
+        Macro expected = new Macro("name", "data data", "param1");
+        assertEquals(expected, macro);
+    }
+
+    @Test public void getMacrosMultipleParameterParse() {
+        String text = "## name param1 param2 MACRO data data " + macroEnd;
+        Macro macro = MacroProcessor.getMacros(text).get("name");
+        Macro expected = new Macro("name", "data data", "param1", "param2");
+        assertEquals(expected, macro);
+    }
+
+    @Test public void substituteAllTest() {
+        String text = "##name()";
+        String expected = macros.get("name").getBody();
+        assertEquals(expected, MacroProcessor.substituteAll(text, macros));
+    }
+
+    @Test public void substituteAllSingleArgumentTest() {
+        String text = "text ##name1(slavko) text";
+        String expected = "text data slavko data text";
+        assertEquals(expected, MacroProcessor.substituteAll(text, macros));
+    }
+
+    @Test public void substituteAllMultipleArgumentTest() {
+        String text = "text ##name2(slavko, bob) text";
+        String expected = "text slavko bob text";
+        assertEquals(expected, MacroProcessor.substituteAll(text, macros));
     }
 }

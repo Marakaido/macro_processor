@@ -1,3 +1,6 @@
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -6,12 +9,24 @@ import java.util.regex.Pattern;
 public class MacroProcessor {
     public static String apply(String text) {
         Map<String, Macro> macros = getMacros(text);
+        try { macros.putAll(loadLibraries(text)); }
+        catch(IOException e) { throw new UncheckedIOException(e);}
         String plainText = eraseMacroDefinitions(text);
         return substituteAll(plainText, macros);
     }
 
+    private static Map<String, Macro> loadLibraries(final String text) throws IOException {
+        Matcher matcher = Pattern.compile(MACRO_LOAD_LIBRARY).matcher(text);
+        Map<String, Macro> macros = new HashMap<>();
+        while(matcher.find()) {
+            Path path = Paths.get(matcher.group("path").trim());
+            macros.putAll(getMacros(new FileReader(path.toFile())));
+        }
+        return macros;
+    }
+
     private static String eraseMacroDefinitions(final String text) {
-        return text.replaceAll(MACRO_DEFINITION, "");
+        return text.replaceAll(MACRO_DEFINITION, "").replaceAll(MACRO_LOAD_LIBRARY, "");
     }
 
     static Map<String, Macro> getMacros(final String text) {
@@ -31,6 +46,11 @@ public class MacroProcessor {
             else macros.put(macro.getName(), macro);
         }
         return macros;
+    }
+
+    static Map<String, Macro> getMacros(final Reader in) throws IOException {
+        String text = readerToString(in);
+        return getMacros(text);
     }
 
     static String substituteAll(final String text, final Map<String, Macro> macros) {
@@ -53,9 +73,18 @@ public class MacroProcessor {
         return result;
     }
 
+    private static String readerToString(Reader reader) throws IOException {
+        BufferedReader in = new BufferedReader(reader);
+        String line = null;
+        StringBuilder builder = new StringBuilder();
+        while ((line = in.readLine()) != null)
+            builder.append(line+"\n");
+        return builder.toString();
+    }
+
     private static final String NAME = "[a-zA-Z0-9]+";
     private static final String PARAM = "&[a-zA-Z0-9]+;";
-    private static final String MACRO_LOAD_LIBRARY = "##\\s*MACRO\\s+(?<path>.*)";
+    private static final String MACRO_LOAD_LIBRARY = "##\\s*MACRO\\s+(?<path>.*)\\s+##\\s*ENDM";
     private static final String MACRO_DEFINITION = "##\\s*(?<name>"+NAME+")\\s+(?<params>("+NAME+"\\s+)*)MACRO\\s+(?<body>.*)?\\s+##\\s*ENDM\\s*";
     private static final String MACRO_CALL = "##\\s*(?<name>"+NAME+")\\s*\\(\\s*(?<params>(("+NAME+"\\s*,\\s*)*"+NAME+")\\s*)?\\)";
 }

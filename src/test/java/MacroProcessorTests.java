@@ -1,5 +1,6 @@
 import org.junit.Test;
 
+import java.io.UncheckedIOException;
 import java.util.Map;
 import static java.util.Map.*;
 
@@ -77,9 +78,16 @@ public class MacroProcessorTests {
     }
 
     @Test public void applyLoadMacroLibraryTest() {
-        String text = "## MACRO macroLibrary.txt\ntext ##name() text";
+        String path = "src/test/resources/macroLibrary.txt";
+        String text = "##MACRO "+path+" ##ENDMtext ##name() text";
         String expected = "text data text";
         assertEquals(expected, MacroProcessor.apply(text));
+    }
+
+    @Test(expected = UncheckedIOException.class)
+    public void applyLoadMacroLibraryNotExistingFileTest() {
+        String text = "## MACRO notExisting.txt ##ENDMtext ##name() text";
+        MacroProcessor.apply(text);
     }
 
     @Test public void applyNestedMacroTest() {

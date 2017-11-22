@@ -73,7 +73,7 @@ public class MacroProcessor {
         return result;
     }
 
-    private static String readerToString(Reader reader) throws IOException {
+    public static String readerToString(Reader reader) throws IOException {
         BufferedReader in = new BufferedReader(reader);
         String line = null;
         StringBuilder builder = new StringBuilder();

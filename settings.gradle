@@ -1,2 +1,4 @@
 rootProject.name = 'macro'
+include 'cli'
+findProject(':cli')?.name = 'macro.cli'
 

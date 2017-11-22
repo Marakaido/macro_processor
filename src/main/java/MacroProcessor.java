@@ -1,4 +1,3 @@
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -48,7 +47,7 @@ public class MacroProcessor {
                 replacement =  macro.apply(params);
             }
             else replacement = macro.getBody();
-
+            replacement = substituteAll(replacement, macros);
             result = result.replace(text.substring(matcher.start(), matcher.end()), replacement);
         }
         return result;
@@ -57,6 +56,6 @@ public class MacroProcessor {
     private static final String NAME = "[a-zA-Z0-9]+";
     private static final String PARAM = "&[a-zA-Z0-9]+;";
     private static final String MACRO_LOAD_LIBRARY = "##\\s*MACRO\\s+(?<path>.*)";
-    private static final String MACRO_DEFINITION = "##\\s*(?<name>"+NAME+")\\s+(?<params>("+NAME+"\\s+)*)MACRO\\s+(?<body>.*)?\\s+##\\s*ENDM";
+    private static final String MACRO_DEFINITION = "##\\s*(?<name>"+NAME+")\\s+(?<params>("+NAME+"\\s+)*)MACRO\\s+(?<body>.*)?\\s+##\\s*ENDM\\s*";
     private static final String MACRO_CALL = "##\\s*(?<name>"+NAME+")\\s*\\(\\s*(?<params>(("+NAME+"\\s*,\\s*)*"+NAME+")\\s*)?\\)";
 }

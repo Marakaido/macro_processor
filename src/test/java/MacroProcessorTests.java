@@ -82,6 +82,20 @@ public class MacroProcessorTests {
         assertEquals(expected, MacroProcessor.apply(text));
     }
 
+    @Test public void applyNestedMacroTest() {
+        String text = "##name MACRO data ##ENDM\n##name2 MACRO ##name() ##ENDM\ntext ##name2() text";
+        String expected = "text data text";
+        assertEquals(expected, MacroProcessor.apply(text));
+    }
+
+    @Test public void applyDeepNestedMacroTest() {
+        String text = "##name MACRO data ##ENDM\n##name2 MACRO data2 ##name() data2 ##ENDM\n" +
+                "##name3 MACRO ##name2() ##ENDM" +
+                "text ##name3() text";
+        String expected = "text data2 data data2 text";
+        assertEquals(expected, MacroProcessor.apply(text));
+    }
+
     @Test public void macroParse() {
         String text = "##name   MACRO data data " + macroEnd;
         Macro macro = MacroProcessor.getMacros(text).get("name");

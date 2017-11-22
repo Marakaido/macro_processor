@@ -1,3 +1,7 @@
+package macro;
+
+import macro.Macro;
+import macro.MacroProcessor;
 import org.junit.Test;
 
 import java.io.UncheckedIOException;

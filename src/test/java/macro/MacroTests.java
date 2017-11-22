@@ -1,3 +1,6 @@
+package macro;
+
+import macro.Macro;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

@@ -1,3 +1,5 @@
+package macro;
+
 import java.util.Arrays;
 
 public class Macro {

@@ -1,3 +1,7 @@
+package macro;
+
+import macro.Macro;
+
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,7 +46,7 @@ public class MacroProcessor {
             else macro = new Macro(matcher.group("name"), matcher.group("body"));
 
             if(macros.containsKey(macro.getName()))
-                throw new IllegalStateException("Macro " + macro.getName() + " already defined");
+                throw new IllegalStateException("macro.Macro " + macro.getName() + " already defined");
             else macros.put(macro.getName(), macro);
         }
         return macros;
@@ -60,7 +64,7 @@ public class MacroProcessor {
         while(matcher.find()) {
             String rawParams = matcher.group("params");
             if(!macros.containsKey(matcher.group("name")))
-                throw new IllegalStateException("Macro " + matcher.group("name") + " not defined");
+                throw new IllegalStateException("macro.Macro " + matcher.group("name") + " not defined");
             Macro macro = macros.get(matcher.group("name"));
             if(rawParams != null) {
                 String[] params = rawParams.trim().replaceAll("\\s", "").split(",");

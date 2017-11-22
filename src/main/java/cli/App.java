@@ -1,3 +1,7 @@
+package cli;
+
+import macro.MacroProcessor;
+
 import java.io.*;
 
 public class App {
